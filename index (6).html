@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Seat Finder · School of Computing · 18 Sep 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F1729;
+    --ink-2:#141F38;
+    --paper:#FAF6EC;
+    --paper-2:#F1EADA;
+    --amber:#F2B705;
+    --amber-dim:#c99a06;
+    --teal:#2EC4B6;
+    --rose:#E8635A;
+    --text-on-ink:#EFEDE4;
+    --text-dim:#9AA3BD;
+    --shadow: 0 30px 60px -25px rgba(0,0,0,.55);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--text-on-ink);
+    font-family:'Inter',sans-serif;
+    overflow-x:hidden;
+    position:relative;
+  }
+  ::selection{ background:var(--amber); color:var(--ink); }
+
+  a{color:inherit;}
+
+  canvas#particles{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:0;
+    pointer-events:none;
+  }
+
+  .wrap{
+    position:relative;
+    z-index:2;
+    max-width:1080px;
+    margin:0 auto;
+    padding:0 28px;
+  }
+
+  /* ---------- NAV ---------- */
+  header.nav{
+    position:relative; z-index:5;
+    padding:26px 0 0;
+  }
+  .nav-inner{
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .brand{
+    display:flex; align-items:baseline; gap:10px;
+  }
+  .brand .mark{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:.2px;
+  }
+  .brand .mark span{ color:var(--amber); }
+  .brand .sub{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--text-dim);
+    letter-spacing:.5px;
+  }
+  nav.links{ display:flex; gap:26px; font-size:14px; color:var(--text-dim); }
+  nav.links a{ text-decoration:none; transition:color .25s ease; }
+  nav.links a:hover{ color:var(--amber); }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding:96px 0 60px;
+    text-align:left;
+  }
+  .eyebrow-row{
+    display:flex; align-items:center; gap:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--amber);
+    margin-bottom:22px;
+  }
+  .eyebrow-row .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--amber);
+    box-shadow:0 0 0 4px rgba(242,183,5,.18);
+  }
+  h1.headline{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(38px, 6vw, 68px);
+    line-height:1.04;
+    letter-spacing:-.5px;
+    margin:0 0 22px;
+    max-width:820px;
+  }
+  h1.headline em{
+    font-style:italic;
+    font-weight:400;
+    color:var(--amber);
+  }
+  p.lede{
+    font-size:17px;
+    line-height:1.6;
+    color:var(--text-dim);
+    max-width:520px;
+    margin:0 0 40px;
+  }
+
+  /* ---------- SEARCH ---------- */
+  .search-panel{
+    background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:18px;
+    padding:8px;
+    max-width:640px;
+    display:flex;
+    gap:8px;
+    backdrop-filter: blur(6px);
+  }
+  .search-panel input{
+    flex:1;
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--text-on-ink);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:16px;
+    letter-spacing:1px;
+    padding:16px 18px;
+    text-transform:uppercase;
+  }
+  .search-panel input::placeholder{
+    color:var(--text-dim);
+    letter-spacing:.5px;
+    text-transform:none;
+    font-family:'Inter',sans-serif;
+  }
+
+  .btn-reveal{
+    position:relative;
+    overflow:hidden;
+    border:none;
+    cursor:pointer;
+    padding:16px 26px;
+    border-radius:12px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    color:var(--ink);
+    background:var(--amber);
+    white-space:nowrap;
+    transition:transform .35s cubic-bezier(.2,.9,.2,1), box-shadow .35s ease;
+    box-shadow:0 10px 24px -10px rgba(242,183,5,.55);
+  }
+  .btn-reveal .shine{
+    position:absolute; top:0; left:-60%;
+    width:40%; height:100%;
+    background:linear-gradient(120deg, transparent, rgba(255,255,255,.65), transparent);
+    transform:skewX(-20deg);
+    animation:shine 3.2s ease-in-out infinite;
+  }
+  @keyframes shine{
+    0%{ left:-60%; }
+    45%{ left:130%; }
+    100%{ left:130%; }
+  }
+  .btn-reveal:hover{
+    transform:translateY(-3px);
+    box-shadow:0 16px 30px -10px rgba(242,183,5,.7);
+  }
+  .btn-reveal:active{ transform:translateY(0) scale(.97); }
+
+  .hint-row{
+    margin-top:14px;
+    font-size:12.5px;
+    color:var(--text-dim);
+    display:flex; align-items:center; gap:8px;
+  }
+  .hint-row kbd{
+    font-family:'IBM Plex Mono', monospace;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12);
+    padding:1px 7px;
+    border-radius:5px;
+    font-size:11px;
+  }
+
+  .error-msg{
+    max-width:640px;
+    margin-top:18px;
+    padding:14px 18px;
+    border-radius:12px;
+    background:rgba(232,99,90,.12);
+    border:1px solid rgba(232,99,90,.35);
+    color:#ffb9b4;
+    font-size:14px;
+    display:none;
+    align-items:center;
+    gap:10px;
+  }
+  .error-msg.show{ display:flex; animation:shake .4s ease; }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-6px); }
+    75%{ transform:translateX(6px); }
+  }
+
+  /* ---------- STATS ---------- */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+    margin-top:64px;
+    padding-top:40px;
+    border-top:1px solid rgba(255,255,255,.08);
+  }
+  .stat b{
+    display:block;
+    font-family:'Fraunces', serif;
+    font-size:32px;
+    font-weight:600;
+    color:var(--amber);
+  }
+  .stat span{
+    font-size:12.5px;
+    color:var(--text-dim);
+  }
+
+  /* ---------- TICKET RESULT ---------- */
+  .ticket-stage{
+    padding:20px 0 90px;
+    min-height:10px;
+  }
+  .ticket{
+    max-width:760px;
+    margin:0 auto;
+    display:flex;
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    opacity:0;
+    transform:translateY(28px) scale(.98);
+    transition:opacity .55s cubic-bezier(.2,.8,.2,1), transform .55s cubic-bezier(.2,.8,.2,1);
+    position:relative;
+  }
+  .ticket.show{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+
+  .stub{
+    width:190px;
+    flex-shrink:0;
+    background:var(--ink);
+    color:var(--paper);
+    border-radius:20px 0 0 20px;
+    padding:28px 20px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    position:relative;
+  }
+  .stub .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:2px;
+    color:var(--amber);
+  }
+  .stub .seatno{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:64px;
+    line-height:1;
+    margin:10px 0 0;
+  }
+  .stub .room-mini{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--text-dim);
+  }
+
+  .perf{
+    position:relative;
+    width:0;
+  }
+  .perf::before, .perf::after{
+    content:'';
+    position:absolute;
+    width:26px; height:26px;
+    background:var(--ink);
+    border-radius:50%;
+    left:-13px;
+    z-index:2;
+  }
+  .perf::before{ top:-13px; }
+  .perf::after{ bottom:-13px; }
+  .perf .dash{
+    position:absolute;
+    top:16px; bottom:16px; left:0;
+    border-left:2px dashed rgba(15,23,41,.18);
+  }
+
+  .details{
+    flex:1;
+    padding:28px 32px 24px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  .details h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:22px;
+    margin:0;
+    letter-spacing:-.2px;
+  }
+  .details .regno-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:#6b7280;
+    letter-spacing:.5px;
+  }
+  .field-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:16px 20px;
+  }
+  .field-grid .field span.k{
+    display:block;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:#8a8f9c;
+    margin-bottom:4px;
+  }
+  .field-grid .field span.v{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .badge{
+    display:inline-block;
+    padding:3px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:600;
+    font-family:'Inter',sans-serif;
+  }
+  .badge.b1{ background:rgba(46,196,182,.15); color:#0e8477; }
+  .badge.b2{ background:rgba(242,183,5,.18); color:#96730a; }
+
+  .barcode{
+    margin-top:auto;
+    height:34px;
+    display:flex;
+    align-items:stretch;
+    gap:2px;
+    opacity:.85;
+  }
+  .barcode i{
+    display:block;
+    background:var(--ink);
+    flex-shrink:0;
+  }
+
+  /* ---------- SECTION HEADS ---------- */
+  .section{ padding:70px 0; }
+  .section-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    margin-bottom:34px;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .section-head h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(26px,3.4vw,36px);
+    margin:0;
+    letter-spacing:-.3px;
+  }
+  .section-head p{
+    color:var(--text-dim);
+    font-size:14.5px;
+    max-width:360px;
+    margin:0;
+  }
+
+  /* ---------- QUOTES ---------- */
+  .quote-box{
+    position:relative;
+    border-radius:20px;
+    background:linear-gradient(160deg, rgba(242,183,5,.08), rgba(46,196,182,.05));
+    border:1px solid rgba(255,255,255,.08);
+    padding:52px 56px;
+    min-height:150px;
+  }
+  .quote-box .mark-icon{
+    font-family:'Fraunces', serif;
+    font-size:64px;
+    color:rgba(242,183,5,.4);
+    line-height:.5;
+    position:absolute;
+    top:34px; left:28px;
+  }
+  .quote-text{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:clamp(19px,2.4vw,26px);
+    line-height:1.5;
+    max-width:640px;
+    margin:0 0 18px;
+    opacity:0;
+    transform:translateY(10px);
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  .quote-text.show{ opacity:1; transform:translateY(0); }
+  .quote-attr{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--text-dim);
+    letter-spacing:.5px;
+  }
+  .quote-dots{
+    display:flex; gap:7px; margin-top:26px;
+  }
+  .quote-dots span{
+    width:7px; height:7px; border-radius:50%;
+    background:rgba(255,255,255,.18);
+    cursor:pointer;
+    transition:background .25s ease, transform .25s ease;
+  }
+  .quote-dots span.active{ background:var(--amber); transform:scale(1.3); }
+
+  /* ---------- FEEDBACK ---------- */
+  .feedback-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:40px;
+    align-items:start;
+  }
+  .fb-form{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .fb-form input, .fb-form textarea{
+    width:100%;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:12px;
+    padding:14px 16px;
+    color:var(--text-on-ink);
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    outline:none;
+    transition:border-color .25s ease, background .25s ease;
+  }
+  .fb-form input:focus, .fb-form textarea:focus{
+    border-color:var(--amber);
+    background:rgba(255,255,255,.06);
+  }
+  .fb-form textarea{ min-height:110px; resize:vertical; }
+
+  .stars{
+    display:flex; gap:6px; margin-top:2px;
+  }
+  .stars button{
+    background:none; border:none; cursor:pointer;
+    font-size:22px; color:rgba(255,255,255,.25);
+    transition:transform .2s ease, color .2s ease;
+    padding:0;
+  }
+  .stars button.active, .stars button:hover{ color:var(--amber); transform:scale(1.15); }
+
+  .btn-submit{
+    align-self:flex-start;
+    border:none; cursor:pointer;
+    padding:13px 24px;
+    border-radius:11px;
+    background:var(--teal);
+    color:#04302c;
+    font-weight:600;
+    font-size:14px;
+    position:relative;
+    overflow:hidden;
+    transition:transform .3s cubic-bezier(.2,.9,.2,1);
+  }
+  .btn-submit:hover{ transform:translateY(-2px); }
+  .btn-submit:active{ transform:translateY(0) scale(.96); }
+
+  .fb-wall{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    max-height:420px;
+    overflow-y:auto;
+    padding-right:6px;
+  }
+  .fb-wall::-webkit-scrollbar{ width:6px; }
+  .fb-wall::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.15); border-radius:4px; }
+
+  .fb-card{
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:14px;
+    padding:16px 18px;
+    animation:fbIn .4s ease;
+  }
+  @keyframes fbIn{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .fb-card .fb-top{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:6px;
+  }
+  .fb-card .fb-name{
+    font-weight:600; font-size:14px;
+  }
+  .fb-card .fb-stars{ color:var(--amber); font-size:12px; letter-spacing:1px; }
+  .fb-card p{
+    margin:0; font-size:13.5px; color:var(--text-dim); line-height:1.5;
+  }
+  .fb-empty{
+    font-size:13.5px; color:var(--text-dim);
+    border:1px dashed rgba(255,255,255,.15);
+    border-radius:14px;
+    padding:26px;
+    text-align:center;
+  }
+  .fb-note{
+    font-size:11.5px; color:var(--text-dim); margin-top:10px;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    border-top:1px solid rgba(255,255,255,.08);
+    padding:34px 0 46px;
+  }
+  .footer-inner{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:14px;
+  }
+  .footer-inner .made{
+    font-size:13px; color:var(--text-dim);
+  }
+  .footer-inner .made b{ color:var(--text-on-ink); font-weight:600; }
+  .footer-inner .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--text-dim);
+  }
+
+  @media (max-width:760px){
+    .stats{ grid-template-columns:repeat(2,1fr); }
+    .ticket{ flex-direction:column; }
+    .stub{ width:100%; border-radius:20px 20px 0 0; flex-direction:row; align-items:center; }
+    .stub .seatno{ margin:0 0 0 14px; font-size:44px; }
+    .perf{ display:none; }
+    .field-grid{ grid-template-columns:1fr 1fr; }
+    .feedback-grid{ grid-template-columns:1fr; }
+    nav.links{ display:none; }
+    .search-panel{ flex-direction:column; }
+    .quote-box{ padding:38px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand">
+      <span class="mark">Seat<span>Finder</span></span>
+      <span class="sub">SCHOOL OF COMPUTING · 18 SEP 2026</span>
+    </div>
+    <nav class="links">
+      <a href="#find">Find seat</a>
+      <a href="#quotes">Quotes</a>
+      <a href="#feedback">Feedback</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap" id="find">
+    <div class="eyebrow-row"><span class="dot"></span> EXAMINATION SEAT LAYOUT · SCHOOL OF COMPUTING</div>
+    <h1 class="headline">Find your seat<br><em>before you find the room.</em></h1>
+    <p class="lede">Enter your registration number to pull up your room, seat and exam details for the 18 Sep 2026 sitting — straight from the official seating layout.</p>
+
+    <div class="search-panel">
+      <input type="text" id="regInput" placeholder="Enter registration number, e.g. RA2511056010001" autocomplete="off">
+      <button class="btn-reveal" id="revealBtn"><span class="shine"></span>Reveal my seat</button>
+    </div>
+    <div class="hint-row">Press <kbd>Enter</kbd> to search · reg numbers are not case sensitive</div>
+    <div class="error-msg" id="errorMsg">⚠ We couldn't find that registration number in the seating layout for 18 Sep 2026. Double-check the digits and try again.</div>
+
+    <div class="stats" id="statsRow">
+      <div class="stat"><b id="statTotal">0</b><span>Students allotted</span></div>
+      <div class="stat"><b id="statRooms">0</b><span>Exam rooms in use</span></div>
+      <div class="stat"><b id="statDepts">0</b><span>Departments covered</span></div>
+      <div class="stat"><b id="statBatches">2</b><span>Batches scheduled</span></div>
+    </div>
+  </section>
+
+  <section class="ticket-stage wrap">
+    <div class="ticket" id="ticket">
+      <div class="stub">
+        <div>
+          <div class="label">SEAT NO.</div>
+          <div class="seatno" id="tSeat">--</div>
+        </div>
+        <div class="room-mini" id="tRoomMini">ROOM —</div>
+      </div>
+      <div class="perf"><div class="dash"></div></div>
+      <div class="details">
+        <div>
+          <div class="regno-tag" id="tRegTag">REG NO —</div>
+          <h3 id="tHeadline">Your exam sitting</h3>
+        </div>
+        <div class="field-grid">
+          <div class="field"><span class="k">Room</span><span class="v" id="tRoom">—</span></div>
+          <div class="field"><span class="k">Block</span><span class="v" id="tBlock">—</span></div>
+          <div class="field"><span class="k">Date</span><span class="v" id="tDate">—</span></div>
+          <div class="field"><span class="k">Department</span><span class="v" id="tDept">—</span></div>
+          <div class="field"><span class="k">Course code</span><span class="v" id="tCourse">—</span></div>
+          <div class="field"><span class="k">Section / Batch</span><span class="v" id="tSection">—</span></div>
+        </div>
+        <div class="barcode" id="tBarcode"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="quotes">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>A word before you walk in</h2>
+        <p>Small reminders for the hour before an exam.</p>
+      </div>
+      <div class="quote-box">
+        <div class="mark-icon">"</div>
+        <p class="quote-text show" id="quoteText"></p>
+        <div class="quote-attr" id="quoteAttr"></div>
+        <div class="quote-dots" id="quoteDots"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="feedback">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Tell us how this worked</h2>
+        <p>Found your seat okay? Something confusing? Leave a note for the team.</p>
+      </div>
+      <div class="feedback-grid">
+        <form class="fb-form" id="fbForm">
+          <input type="text" id="fbName" placeholder="Your name (optional)">
+          <div class="stars" id="fbStars">
+            <button type="button" data-v="1">★</button>
+            <button type="button" data-v="2">★</button>
+            <button type="button" data-v="3">★</button>
+            <button type="button" data-v="4">★</button>
+            <button type="button" data-v="5">★</button>
+          </div>
+          <textarea id="fbMsg" placeholder="Write your feedback..." required></textarea>
+          <button type="submit" class="btn-submit">Send feedback</button>
+          <div class="fb-note">Notes are shown on this page for your current visit only — nothing is sent to a server.</div>
+        </form>
+        <div>
+          <div class="fb-wall" id="fbWall">
+            <div class="fb-empty" id="fbEmpty">No feedback yet — be the first to leave a note.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div class="made">Built by <b>Raghul</b> · Tesseract Labs</div>
+    <div class="tag">SRM INSTITUTE OF SCIENCE &amp; TECHNOLOGY — SCHOOL OF COMPUTING</div>
+  </div>
+</footer>
+
+<script>
+  window.SEAT_DATA = {"RA2511056010001":{"r":"LH1315","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010002":{"r":"LH1315","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010003":{"r":"LH1315","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010004":{"r":"LH1315","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010005":{"r":"LH1315","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2411027010069":{"r":"LH1315","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010070":{"r":"LH1315","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010071":{"r":"LH1315","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010072":{"r":"LH1315","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010073":{"r":"LH1315","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2511056010006":{"r":"LH1315","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010007":{"r":"LH1315","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010008":{"r":"LH1315","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010009":{"r":"LH1315","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010010":{"r":"LH1315","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2411027010074":{"r":"LH1315","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010075":{"r":"LH1315","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010076":{"r":"LH1315","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010077":{"r":"LH1315","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010078":{"r":"LH1315","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2511056010011":{"r":"LH1315","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010012":{"r":"LH1315","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010013":{"r":"LH1315","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010014":{"r":"LH1315","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010015":{"r":"LH1315","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2411027010079":{"r":"LH1315","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010080":{"r":"LH1315","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010081":{"r":"LH1315","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010082":{"r":"LH1315","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010083":{"r":"LH1315","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2511056010016":{"r":"LH1315","s":"16","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010017":{"r":"LH1315","s":"17","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010018":{"r":"LH1315","s":"18","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010019":{"r":"LH1315","s":"19","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010020":{"r":"LH1315","s":"20","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2411027010084":{"r":"LH1315","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010086":{"r":"LH1315","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010087":{"r":"LH1315","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010088":{"r":"LH1315","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010089":{"r":"LH1315","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2511056010021":{"r":"LH1315","s":"21","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010022":{"r":"LH1315","s":"22","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010023":{"r":"LH1315","s":"23","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010024":{"r":"LH1315","s":"24","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010025":{"r":"LH1315","s":"25","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2411027010090":{"r":"LH1315","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010091":{"r":"LH1315","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010092":{"r":"LH1315","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010093":{"r":"LH1315","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010094":{"r":"LH1315","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2511056010026":{"r":"LH1315","s":"26","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010027":{"r":"LH1315","s":"27","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010028":{"r":"LH1315","s":"28","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010029":{"r":"LH1315","s":"29","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010030":{"r":"LH1315","s":"30","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2411027010095":{"r":"LH1315","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010096":{"r":"LH1315","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010098":{"r":"LH1315","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010099":{"r":"LH1315","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010100":{"r":"LH1315","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2511056010031":{"r":"LH204","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010032":{"r":"LH204","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010033":{"r":"LH204","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010034":{"r":"LH204","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010035":{"r":"LH204","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2411027010101":{"r":"LH204","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010102":{"r":"LH204","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010103":{"r":"LH204","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010104":{"r":"LH204","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010106":{"r":"LH204","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2511056010037":{"r":"LH204","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010038":{"r":"LH204","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010039":{"r":"LH204","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010041":{"r":"LH204","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010042":{"r":"LH204","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2411027010107":{"r":"LH204","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010108":{"r":"LH204","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010109":{"r":"LH204","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010110":{"r":"LH204","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010111":{"r":"LH204","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2511056010043":{"r":"LH204","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010044":{"r":"LH204","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010045":{"r":"LH204","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010046":{"r":"LH204","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010047":{"r":"LH204","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2411027010113":{"r":"LH204","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010114":{"r":"LH204","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010115":{"r":"LH204","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010116":{"r":"LH204","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010117":{"r":"LH204","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2511056010048":{"r":"LH204","s":"16","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010049":{"r":"LH204","s":"17","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010050":{"r":"LH204","s":"18","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010051":{"r":"LH204","s":"19","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010052":{"r":"LH204","s":"20","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2411027010118":{"r":"LH204","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010119":{"r":"LH204","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010120":{"r":"LH204","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010121":{"r":"LH204","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010122":{"r":"LH204","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2511056010053":{"r":"LH204","s":"21","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010054":{"r":"LH204","s":"22","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010055":{"r":"LH204","s":"23","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010056":{"r":"LH204","s":"24","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010057":{"r":"LH204","s":"25","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2411027010123":{"r":"LH204","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010124":{"r":"LH204","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010125":{"r":"LH204","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010126":{"r":"LH204","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010127":{"r":"LH204","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2511056010058":{"r":"LH204","s":"26","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010059":{"r":"LH204","s":"27","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010060":{"r":"LH204","s":"28","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010061":{"r":"LH204","s":"29","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010062":{"r":"LH204","s":"30","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2411027010129":{"r":"LH204","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010130":{"r":"LH204","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010131":{"r":"LH204","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010133":{"r":"LH204","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010134":{"r":"LH204","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2511056010063":{"r":"LH205","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AP1","ba":"Batch 1"},"RA2511056010064":{"r":"LH205","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010065":{"r":"LH205","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010066":{"r":"LH205","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010067":{"r":"LH205","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2411027010135":{"r":"LH205","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010136":{"r":"LH205","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010137":{"r":"LH205","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010138":{"r":"LH205","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010139":{"r":"LH205","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2511056010068":{"r":"LH205","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010069":{"r":"LH205","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010070":{"r":"LH205","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010071":{"r":"LH205","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010072":{"r":"LH205","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2411027010140":{"r":"LH205","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010141":{"r":"LH205","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010143":{"r":"LH205","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010145":{"r":"LH205","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010146":{"r":"LH205","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2511056010073":{"r":"LH205","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010074":{"r":"LH205","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010075":{"r":"LH205","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010076":{"r":"LH205","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010077":{"r":"LH205","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2411027010147":{"r":"LH205","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010148":{"r":"LH205","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010150":{"r":"LH205","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010151":{"r":"LH205","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010152":{"r":"LH205","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2511056010078":{"r":"LH205","s":"16","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010079":{"r":"LH205","s":"17","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010080":{"r":"LH205","s":"18","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010081":{"r":"LH205","s":"19","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010082":{"r":"LH205","s":"20","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2411027010154":{"r":"LH205","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010155":{"r":"LH205","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010156":{"r":"LH205","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010157":{"r":"LH205","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411027010158":{"r":"LH205","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2511056010084":{"r":"LH205","s":"21","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010085":{"r":"LH205","s":"22","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010086":{"r":"LH205","s":"23","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010087":{"r":"LH205","s":"24","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010088":{"r":"LH205","s":"25","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2411027010159":{"r":"LH205","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS1","ba":"Batch 1"},"RA2411042010001":{"r":"LH205","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010002":{"r":"LH205","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010003":{"r":"LH205","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010004":{"r":"LH205","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2511056010089":{"r":"LH205","s":"26","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010090":{"r":"LH205","s":"27","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010091":{"r":"LH205","s":"28","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010092":{"r":"LH205","s":"29","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010093":{"r":"LH205","s":"30","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2411042010005":{"r":"LH205","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010006":{"r":"LH205","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010007":{"r":"LH205","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010008":{"r":"LH205","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010009":{"r":"LH205","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2511056010094":{"r":"LH220","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010095":{"r":"LH220","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010096":{"r":"LH220","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010097":{"r":"LH220","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010098":{"r":"LH220","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2411042010010":{"r":"LH220","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010011":{"r":"LH220","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010012":{"r":"LH220","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010013":{"r":"LH220","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010014":{"r":"LH220","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2511056010099":{"r":"LH220","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010100":{"r":"LH220","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010101":{"r":"LH220","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010102":{"r":"LH220","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010103":{"r":"LH220","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2411042010015":{"r":"LH220","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010016":{"r":"LH220","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010017":{"r":"LH220","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010018":{"r":"LH220","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010019":{"r":"LH220","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2511056010104":{"r":"LH220","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010105":{"r":"LH220","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010106":{"r":"LH220","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010107":{"r":"LH220","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010108":{"r":"LH220","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2411042010020":{"r":"LH220","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010021":{"r":"LH220","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010023":{"r":"LH220","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010025":{"r":"LH220","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010026":{"r":"LH220","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2511056010109":{"r":"LH220","s":"16","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010110":{"r":"LH220","s":"17","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010111":{"r":"LH220","s":"18","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010112":{"r":"LH220","s":"19","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010113":{"r":"LH220","s":"20","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2411042010027":{"r":"LH220","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010028":{"r":"LH220","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010029":{"r":"LH220","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010030":{"r":"LH220","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010031":{"r":"LH220","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2511056010114":{"r":"LH220","s":"21","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010115":{"r":"LH220","s":"22","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010116":{"r":"LH220","s":"23","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010117":{"r":"LH220","s":"24","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010118":{"r":"LH220","s":"25","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2411042010032":{"r":"LH220","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010033":{"r":"LH220","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010034":{"r":"LH220","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010035":{"r":"LH220","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010036":{"r":"LH220","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2511056010119":{"r":"LH220","s":"26","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010120":{"r":"LH220","s":"27","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010121":{"r":"LH220","s":"28","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010122":{"r":"LH220","s":"29","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010123":{"r":"LH220","s":"30","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2411042010037":{"r":"LH220","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010038":{"r":"LH220","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010039":{"r":"LH220","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010040":{"r":"LH220","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010041":{"r":"LH220","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2511056010124":{"r":"LH221","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010125":{"r":"LH221","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AQ1","ba":"Batch 1"},"RA2511056010126":{"r":"LH221","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010127":{"r":"LH221","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010128":{"r":"LH221","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2411042010042":{"r":"LH221","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010043":{"r":"LH221","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010044":{"r":"LH221","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411042010045":{"r":"LH221","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT1","ba":"Batch 1"},"RA2411056010001":{"r":"LH221","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2511056010129":{"r":"LH221","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010130":{"r":"LH221","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010131":{"r":"LH221","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010132":{"r":"LH221","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010133":{"r":"LH221","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2411056010002":{"r":"LH221","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010003":{"r":"LH221","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010004":{"r":"LH221","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010005":{"r":"LH221","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010006":{"r":"LH221","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2511056010134":{"r":"LH221","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010135":{"r":"LH221","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010136":{"r":"LH221","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010137":{"r":"LH221","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010138":{"r":"LH221","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2411056010007":{"r":"LH221","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010008":{"r":"LH221","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010009":{"r":"LH221","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010010":{"r":"LH221","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010011":{"r":"LH221","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2511056010139":{"r":"LH221","s":"16","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010140":{"r":"LH221","s":"17","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010141":{"r":"LH221","s":"18","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010142":{"r":"LH221","s":"19","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010143":{"r":"LH221","s":"20","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2411056010012":{"r":"LH221","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010013":{"r":"LH221","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010014":{"r":"LH221","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010015":{"r":"LH221","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010016":{"r":"LH221","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2511056010144":{"r":"LH221","s":"21","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010145":{"r":"LH221","s":"22","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010146":{"r":"LH221","s":"23","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010147":{"r":"LH221","s":"24","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010148":{"r":"LH221","s":"25","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2411056010017":{"r":"LH221","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010018":{"r":"LH221","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010019":{"r":"LH221","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010020":{"r":"LH221","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010021":{"r":"LH221","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2511056010149":{"r":"LH221","s":"26","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010150":{"r":"LH221","s":"27","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010151":{"r":"LH221","s":"28","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010152":{"r":"LH221","s":"29","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010153":{"r":"LH221","s":"30","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2411056010022":{"r":"LH221","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010023":{"r":"LH221","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010024":{"r":"LH221","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010025":{"r":"LH221","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010026":{"r":"LH221","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2511056010155":{"r":"LH304","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010156":{"r":"LH304","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010157":{"r":"LH304","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010158":{"r":"LH304","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010159":{"r":"LH304","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2411056010027":{"r":"LH304","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010028":{"r":"LH304","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010030":{"r":"LH304","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010031":{"r":"LH304","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010032":{"r":"LH304","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2511056010161":{"r":"LH304","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010162":{"r":"LH304","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010163":{"r":"LH304","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010164":{"r":"LH304","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010165":{"r":"LH304","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2411056010033":{"r":"LH304","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010034":{"r":"LH304","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010035":{"r":"LH304","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010036":{"r":"LH304","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010037":{"r":"LH304","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2511056010166":{"r":"LH304","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010167":{"r":"LH304","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010168":{"r":"LH304","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010169":{"r":"LH304","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010170":{"r":"LH304","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2411056010038":{"r":"LH304","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010039":{"r":"LH304","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010040":{"r":"LH304","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010041":{"r":"LH304","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010042":{"r":"LH304","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2511056010171":{"r":"LH304","s":"16","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010172":{"r":"LH304","s":"17","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010173":{"r":"LH304","s":"18","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010174":{"r":"LH304","s":"19","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010175":{"r":"LH304","s":"20","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2411056010043":{"r":"LH304","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010044":{"r":"LH304","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010045":{"r":"LH304","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010046":{"r":"LH304","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010047":{"r":"LH304","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2511056010176":{"r":"LH304","s":"21","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010177":{"r":"LH304","s":"22","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010178":{"r":"LH304","s":"23","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010179":{"r":"LH304","s":"24","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010180":{"r":"LH304","s":"25","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2411056010048":{"r":"LH304","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010049":{"r":"LH304","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010050":{"r":"LH304","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010051":{"r":"LH304","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010052":{"r":"LH304","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2511056010181":{"r":"LH304","s":"26","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010183":{"r":"LH304","s":"27","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010184":{"r":"LH304","s":"28","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010185":{"r":"LH304","s":"29","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010187":{"r":"LH304","s":"30","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2411056010053":{"r":"LH304","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010054":{"r":"LH304","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010055":{"r":"LH304","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010056":{"r":"LH304","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010057":{"r":"LH304","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2511056010188":{"r":"LH319","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010189":{"r":"LH319","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010190":{"r":"LH319","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AR1","ba":"Batch 1"},"RA2511056010191":{"r":"LH319","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010192":{"r":"LH319","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2411056010058":{"r":"LH319","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010059":{"r":"LH319","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010060":{"r":"LH319","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010061":{"r":"LH319","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010062":{"r":"LH319","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2511056010193":{"r":"LH319","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010194":{"r":"LH319","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010195":{"r":"LH319","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010196":{"r":"LH319","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010197":{"r":"LH319","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2411056010063":{"r":"LH319","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO1","ba":"Batch 1"},"RA2411056010064":{"r":"LH319","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010065":{"r":"LH319","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010066":{"r":"LH319","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010068":{"r":"LH319","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2511056010198":{"r":"LH319","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010199":{"r":"LH319","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010200":{"r":"LH319","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010201":{"r":"LH319","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010202":{"r":"LH319","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2411056010069":{"r":"LH319","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010070":{"r":"LH319","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010071":{"r":"LH319","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010072":{"r":"LH319","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010073":{"r":"LH319","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2511056010203":{"r":"LH319","s":"16","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010204":{"r":"LH319","s":"17","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010205":{"r":"LH319","s":"18","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010206":{"r":"LH319","s":"19","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010207":{"r":"LH319","s":"20","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2411056010074":{"r":"LH319","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010076":{"r":"LH319","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010077":{"r":"LH319","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010078":{"r":"LH319","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010079":{"r":"LH319","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2511056010208":{"r":"LH319","s":"21","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010209":{"r":"LH319","s":"22","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010210":{"r":"LH319","s":"23","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010211":{"r":"LH319","s":"24","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010212":{"r":"LH319","s":"25","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2411056010080":{"r":"LH319","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010081":{"r":"LH319","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010082":{"r":"LH319","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010083":{"r":"LH319","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010084":{"r":"LH319","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2511056010213":{"r":"LH319","s":"26","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010214":{"r":"LH319","s":"27","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010215":{"r":"LH319","s":"28","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010217":{"r":"LH319","s":"29","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010218":{"r":"LH319","s":"30","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2411056010085":{"r":"LH319","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010086":{"r":"LH319","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010087":{"r":"LH319","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010088":{"r":"LH319","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010089":{"r":"LH319","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2511056010219":{"r":"LH604","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010220":{"r":"LH604","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010221":{"r":"LH604","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010223":{"r":"LH604","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010224":{"r":"LH604","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2311056010331":{"r":"LH604","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411027010039":{"r":"LH604","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010041":{"r":"LH604","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010042":{"r":"LH604","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010043":{"r":"LH604","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2511056010225":{"r":"LH604","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010226":{"r":"LH604","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010227":{"r":"LH604","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010229":{"r":"LH604","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010230":{"r":"LH604","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2411027010044":{"r":"LH604","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010045":{"r":"LH604","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010046":{"r":"LH604","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010047":{"r":"LH604","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010048":{"r":"LH604","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2511056010231":{"r":"LH604","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010232":{"r":"LH604","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010233":{"r":"LH604","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010234":{"r":"LH604","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010235":{"r":"LH604","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2411027010049":{"r":"LH604","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010050":{"r":"LH604","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010051":{"r":"LH604","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010052":{"r":"LH604","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010053":{"r":"LH604","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2511056010236":{"r":"LH604","s":"16","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010237":{"r":"LH604","s":"17","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010238":{"r":"LH604","s":"18","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010239":{"r":"LH604","s":"19","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010240":{"r":"LH604","s":"20","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2411027010054":{"r":"LH604","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010055":{"r":"LH604","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010056":{"r":"LH604","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010057":{"r":"LH604","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010058":{"r":"LH604","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2511056010241":{"r":"LH604","s":"21","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010242":{"r":"LH604","s":"22","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010243":{"r":"LH604","s":"23","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010244":{"r":"LH604","s":"24","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010245":{"r":"LH604","s":"25","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2411027010059":{"r":"LH604","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010060":{"r":"LH604","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010061":{"r":"LH604","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010062":{"r":"LH604","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010063":{"r":"LH604","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2511056010246":{"r":"LH604","s":"26","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010247":{"r":"LH604","s":"27","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010248":{"r":"LH604","s":"28","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010249":{"r":"LH604","s":"29","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010250":{"r":"LH604","s":"30","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2411027010064":{"r":"LH604","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010065":{"r":"LH604","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010066":{"r":"LH604","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010067":{"r":"LH604","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2411027010068":{"r":"LH604","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR1","ba":"Batch 1"},"RA2511056010251":{"r":"LH613","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010252":{"r":"LH613","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010253":{"r":"LH613","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010254":{"r":"LH613","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AS1","ba":"Batch 1"},"RA2511056010255":{"r":"LH613","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2411056010090":{"r":"LH613","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010092":{"r":"LH613","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010093":{"r":"LH613","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010094":{"r":"LH613","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010095":{"r":"LH613","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2511056010256":{"r":"LH613","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010257":{"r":"LH613","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010258":{"r":"LH613","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010259":{"r":"LH613","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010260":{"r":"LH613","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2411056010096":{"r":"LH613","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010098":{"r":"LH613","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010099":{"r":"LH613","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010100":{"r":"LH613","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010101":{"r":"LH613","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2511056010261":{"r":"LH613","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010262":{"r":"LH613","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010263":{"r":"LH613","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010264":{"r":"LH613","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010265":{"r":"LH613","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2411056010102":{"r":"LH613","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010103":{"r":"LH613","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010104":{"r":"LH613","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010105":{"r":"LH613","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010106":{"r":"LH613","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2511056010266":{"r":"LH613","s":"16","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010267":{"r":"LH613","s":"17","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010268":{"r":"LH613","s":"18","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010269":{"r":"LH613","s":"19","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010270":{"r":"LH613","s":"20","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2411056010107":{"r":"LH613","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010108":{"r":"LH613","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010109":{"r":"LH613","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010110":{"r":"LH613","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010111":{"r":"LH613","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2511056010271":{"r":"LH613","s":"21","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010273":{"r":"LH613","s":"22","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010274":{"r":"LH613","s":"23","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010275":{"r":"LH613","s":"24","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010276":{"r":"LH613","s":"25","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2411056010112":{"r":"LH613","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010113":{"r":"LH613","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010114":{"r":"LH613","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010116":{"r":"LH613","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010117":{"r":"LH613","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2511056010278":{"r":"LH613","s":"26","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010279":{"r":"LH613","s":"27","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010280":{"r":"LH613","s":"28","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010281":{"r":"LH613","s":"29","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010282":{"r":"LH613","s":"30","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2411056010118":{"r":"LH613","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010119":{"r":"LH613","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010120":{"r":"LH613","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010121":{"r":"LH613","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010122":{"r":"LH613","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2511056010283":{"r":"LH614","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010284":{"r":"LH614","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010285":{"r":"LH614","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010286":{"r":"LH614","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010288":{"r":"LH614","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2411056010123":{"r":"LH614","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010124":{"r":"LH614","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010126":{"r":"LH614","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010127":{"r":"LH614","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP1","ba":"Batch 1"},"RA2411056010128":{"r":"LH614","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2511056010289":{"r":"LH614","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010290":{"r":"LH614","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010291":{"r":"LH614","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010292":{"r":"LH614","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010293":{"r":"LH614","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2411056010129":{"r":"LH614","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010130":{"r":"LH614","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010131":{"r":"LH614","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010132":{"r":"LH614","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010133":{"r":"LH614","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2511056010294":{"r":"LH614","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010295":{"r":"LH614","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010296":{"r":"LH614","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010297":{"r":"LH614","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010298":{"r":"LH614","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2411056010134":{"r":"LH614","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010135":{"r":"LH614","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010137":{"r":"LH614","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010138":{"r":"LH614","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010139":{"r":"LH614","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2511056010299":{"r":"LH614","s":"16","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010300":{"r":"LH614","s":"17","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010301":{"r":"LH614","s":"18","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010302":{"r":"LH614","s":"19","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010303":{"r":"LH614","s":"20","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2411056010140":{"r":"LH614","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010141":{"r":"LH614","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010142":{"r":"LH614","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010143":{"r":"LH614","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010144":{"r":"LH614","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2511056010304":{"r":"LH614","s":"21","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010306":{"r":"LH614","s":"22","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010307":{"r":"LH614","s":"23","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010308":{"r":"LH614","s":"24","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010309":{"r":"LH614","s":"25","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2411056010145":{"r":"LH614","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010146":{"r":"LH614","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010147":{"r":"LH614","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010148":{"r":"LH614","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010149":{"r":"LH614","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2511056010310":{"r":"LH614","s":"26","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010311":{"r":"LH614","s":"27","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010312":{"r":"LH614","s":"28","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010313":{"r":"LH614","s":"29","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010314":{"r":"LH614","s":"30","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2411056010150":{"r":"LH614","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010151":{"r":"LH614","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010152":{"r":"LH614","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010153":{"r":"LH614","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010154":{"r":"LH614","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2511056010315":{"r":"LH615","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010316":{"r":"LH615","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010317":{"r":"LH615","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010318":{"r":"LH615","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2511056010319":{"r":"LH615","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS202T","se":"AT1","ba":"Batch 1"},"RA2411056010155":{"r":"LH615","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010156":{"r":"LH615","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010157":{"r":"LH615","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010158":{"r":"LH615","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010159":{"r":"LH615","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010160":{"r":"LH615","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010161":{"r":"LH615","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010162":{"r":"LH615","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010163":{"r":"LH615","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010164":{"r":"LH615","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010165":{"r":"LH615","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010166":{"r":"LH615","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010167":{"r":"LH615","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010169":{"r":"LH615","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010170":{"r":"LH615","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010171":{"r":"LH615","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010172":{"r":"LH615","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010173":{"r":"LH615","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010174":{"r":"LH615","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010175":{"r":"LH615","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010176":{"r":"LH615","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010177":{"r":"LH615","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010178":{"r":"LH615","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010179":{"r":"LH615","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010180":{"r":"LH615","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010181":{"r":"LH615","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010182":{"r":"LH615","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010183":{"r":"LH615","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010184":{"r":"LH615","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010185":{"r":"LH615","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010186":{"r":"LH915","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010187":{"r":"LH915","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2411056010189":{"r":"LH915","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ1","ba":"Batch 1"},"RA2511042010001":{"r":"LH1304","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010002":{"r":"LH1304","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010003":{"r":"LH1304","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010004":{"r":"LH1304","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010005":{"r":"LH1304","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2311050010040":{"r":"LH1304","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2311056010245":{"r":"LH1304","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411027010001":{"r":"LH1304","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010002":{"r":"LH1304","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010003":{"r":"LH1304","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2511042010006":{"r":"LH1304","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010007":{"r":"LH1304","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010008":{"r":"LH1304","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010010":{"r":"LH1304","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010011":{"r":"LH1304","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2411027010004":{"r":"LH1304","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010005":{"r":"LH1304","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010006":{"r":"LH1304","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010007":{"r":"LH1304","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010008":{"r":"LH1304","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2511042010012":{"r":"LH1304","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010013":{"r":"LH1304","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010014":{"r":"LH1304","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010015":{"r":"LH1304","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010016":{"r":"LH1304","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2411027010009":{"r":"LH1304","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010010":{"r":"LH1304","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010011":{"r":"LH1304","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010012":{"r":"LH1304","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010013":{"r":"LH1304","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2511042010017":{"r":"LH1304","s":"16","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010018":{"r":"LH1304","s":"17","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010019":{"r":"LH1304","s":"18","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010020":{"r":"LH1304","s":"19","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010021":{"r":"LH1304","s":"20","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2411027010014":{"r":"LH1304","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010015":{"r":"LH1304","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010017":{"r":"LH1304","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010018":{"r":"LH1304","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010019":{"r":"LH1304","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2511042010022":{"r":"LH1304","s":"21","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010023":{"r":"LH1304","s":"22","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010024":{"r":"LH1304","s":"23","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010025":{"r":"LH1304","s":"24","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010026":{"r":"LH1304","s":"25","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2411027010020":{"r":"LH1304","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010021":{"r":"LH1304","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010022":{"r":"LH1304","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010023":{"r":"LH1304","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010024":{"r":"LH1304","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2511042010028":{"r":"LH1304","s":"26","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010029":{"r":"LH1304","s":"27","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010030":{"r":"LH1304","s":"28","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010032":{"r":"LH1304","s":"29","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010033":{"r":"LH1304","s":"30","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2411027010025":{"r":"LH1304","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010026":{"r":"LH1304","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010027":{"r":"LH1304","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010028":{"r":"LH1304","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010029":{"r":"LH1304","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2511042010034":{"r":"LH1305","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010035":{"r":"LH1305","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010036":{"r":"LH1305","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010037":{"r":"LH1305","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010039":{"r":"LH1305","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2411027010030":{"r":"LH1305","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010031":{"r":"LH1305","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010032":{"r":"LH1305","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010033":{"r":"LH1305","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010035":{"r":"LH1305","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2511042010040":{"r":"LH1305","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010042":{"r":"LH1305","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010044":{"r":"LH1305","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010045":{"r":"LH1305","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010046":{"r":"LH1305","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2411027010036":{"r":"LH1305","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010037":{"r":"LH1305","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010038":{"r":"LH1305","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411027010160":{"r":"LH1305","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411027010161":{"r":"LH1305","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2511042010047":{"r":"LH1305","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010048":{"r":"LH1305","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010049":{"r":"LH1305","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010050":{"r":"LH1305","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010051":{"r":"LH1305","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2411027010162":{"r":"LH1305","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411027010164":{"r":"LH1305","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411027010165":{"r":"LH1305","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411027010166":{"r":"LH1305","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411027010168":{"r":"LH1305","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2511042010052":{"r":"LH1305","s":"16","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010053":{"r":"LH1305","s":"17","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010054":{"r":"LH1305","s":"18","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010055":{"r":"LH1305","s":"19","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010056":{"r":"LH1305","s":"20","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2411027010170":{"r":"LH1305","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411027010171":{"r":"LH1305","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411027010173":{"r":"LH1305","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411027010174":{"r":"LH1305","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411027010175":{"r":"LH1305","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2511042010057":{"r":"LH1305","s":"21","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010058":{"r":"LH1305","s":"22","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010059":{"r":"LH1305","s":"23","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010060":{"r":"LH1305","s":"24","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511042010061":{"r":"LH1305","s":"25","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2411042010046":{"r":"LH1305","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010047":{"r":"LH1305","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010048":{"r":"LH1305","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010049":{"r":"LH1305","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010050":{"r":"LH1305","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2511042010062":{"r":"LH1305","s":"26","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AT2","ba":"Batch 2"},"RA2511050010001":{"r":"LH1305","s":"27","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511050010002":{"r":"LH1305","s":"28","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511050010003":{"r":"LH1305","s":"29","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511050010004":{"r":"LH1305","s":"30","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2411042010051":{"r":"LH1305","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010052":{"r":"LH1305","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010054":{"r":"LH1305","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010055":{"r":"LH1305","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010056":{"r":"LH1305","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2511050010005":{"r":"LH1306","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511050010006":{"r":"LH1306","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511050010007":{"r":"LH1306","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511050010008":{"r":"LH1306","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511050010009":{"r":"LH1306","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2411042010057":{"r":"LH1306","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010058":{"r":"LH1306","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010059":{"r":"LH1306","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010060":{"r":"LH1306","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010061":{"r":"LH1306","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2511050010010":{"r":"LH1306","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511050010011":{"r":"LH1306","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511050010014":{"r":"LH1306","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511050010015":{"r":"LH1306","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511050010016":{"r":"LH1306","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2411042010062":{"r":"LH1306","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010063":{"r":"LH1306","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010064":{"r":"LH1306","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010065":{"r":"LH1306","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010066":{"r":"LH1306","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2511050010017":{"r":"LH1306","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511050010019":{"r":"LH1306","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010001":{"r":"LH1306","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010002":{"r":"LH1306","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010003":{"r":"LH1306","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2411042010067":{"r":"LH1306","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010068":{"r":"LH1306","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010069":{"r":"LH1306","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010070":{"r":"LH1306","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010071":{"r":"LH1306","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2511051010004":{"r":"LH1306","s":"16","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010005":{"r":"LH1306","s":"17","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010006":{"r":"LH1306","s":"18","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010007":{"r":"LH1306","s":"19","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010008":{"r":"LH1306","s":"20","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2411042010072":{"r":"LH1306","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010075":{"r":"LH1306","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010076":{"r":"LH1306","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010077":{"r":"LH1306","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010078":{"r":"LH1306","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2511051010009":{"r":"LH1306","s":"21","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010010":{"r":"LH1306","s":"22","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010011":{"r":"LH1306","s":"23","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010013":{"r":"LH1306","s":"24","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010014":{"r":"LH1306","s":"25","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2411042010079":{"r":"LH1306","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010080":{"r":"LH1306","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010081":{"r":"LH1306","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010082":{"r":"LH1306","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010083":{"r":"LH1306","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2511051010015":{"r":"LH1306","s":"26","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010016":{"r":"LH1306","s":"27","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010017":{"r":"LH1306","s":"28","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010018":{"r":"LH1306","s":"29","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010019":{"r":"LH1306","s":"30","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2411042010084":{"r":"LH1306","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010085":{"r":"LH1306","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010086":{"r":"LH1306","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010087":{"r":"LH1306","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010088":{"r":"LH1306","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2511051010020":{"r":"LH1313","s":"1","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010021":{"r":"LH1313","s":"2","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010022":{"r":"LH1313","s":"3","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010023":{"r":"LH1313","s":"4","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010024":{"r":"LH1313","s":"5","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2411042010090":{"r":"LH1313","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411042010091":{"r":"LH1313","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AT2","ba":"Batch 2"},"RA2411050010001":{"r":"LH1313","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010002":{"r":"LH1313","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010003":{"r":"LH1313","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2511051010026":{"r":"LH1313","s":"6","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010028":{"r":"LH1313","s":"7","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010029":{"r":"LH1313","s":"8","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010030":{"r":"LH1313","s":"9","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010031":{"r":"LH1313","s":"10","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2411050010004":{"r":"LH1313","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010005":{"r":"LH1313","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010006":{"r":"LH1313","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010007":{"r":"LH1313","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010008":{"r":"LH1313","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2511051010032":{"r":"LH1313","s":"11","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010033":{"r":"LH1313","s":"12","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010034":{"r":"LH1313","s":"13","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010035":{"r":"LH1313","s":"14","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2511051010036":{"r":"LH1313","s":"15","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSS201T","se":"AS2","ba":"Batch 2"},"RA2411050010009":{"r":"LH1313","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010010":{"r":"LH1313","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010011":{"r":"LH1313","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010012":{"r":"LH1313","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010013":{"r":"LH1313","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010014":{"r":"LH1313","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010015":{"r":"LH1313","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010016":{"r":"LH1313","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010017":{"r":"LH1313","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010018":{"r":"LH1313","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010019":{"r":"LH1313","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010020":{"r":"LH1313","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010021":{"r":"LH1313","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010022":{"r":"LH1313","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010024":{"r":"LH1313","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010025":{"r":"LH1313","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010026":{"r":"LH1313","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010027":{"r":"LH1313","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010028":{"r":"LH1313","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010029":{"r":"LH1313","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411051010018":{"r":"LH1314","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010019":{"r":"LH1314","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010020":{"r":"LH1314","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010021":{"r":"LH1314","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010022":{"r":"LH1314","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010023":{"r":"LH1314","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010024":{"r":"LH1314","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010025":{"r":"LH1314","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010026":{"r":"LH1314","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010027":{"r":"LH1314","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010028":{"r":"LH1314","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010029":{"r":"LH1314","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010030":{"r":"LH1314","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010031":{"r":"LH1314","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010032":{"r":"LH1314","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010033":{"r":"LH1314","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010034":{"r":"LH1314","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010035":{"r":"LH1314","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010037":{"r":"LH1314","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010038":{"r":"LH1314","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010039":{"r":"LH1314","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010040":{"r":"LH1314","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010041":{"r":"LH1314","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010043":{"r":"LH1314","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010044":{"r":"LH1314","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010045":{"r":"LH1314","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411056010190":{"r":"LH1314","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010191":{"r":"LH1314","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010192":{"r":"LH1314","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010193":{"r":"LH1314","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010194":{"r":"LH1315","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010195":{"r":"LH1315","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010196":{"r":"LH1315","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010197":{"r":"LH1315","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010198":{"r":"LH1315","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010199":{"r":"LH1315","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010200":{"r":"LH1315","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010201":{"r":"LH1315","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010202":{"r":"LH1315","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010203":{"r":"LH1315","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010205":{"r":"LH1315","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010206":{"r":"LH1315","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010207":{"r":"LH1315","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010208":{"r":"LH1315","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010209":{"r":"LH1315","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010210":{"r":"LH1315","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010211":{"r":"LH1315","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010212":{"r":"LH1315","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010213":{"r":"LH1315","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010214":{"r":"LH1315","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010215":{"r":"LH1315","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010216":{"r":"LH1315","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010217":{"r":"LH1315","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010218":{"r":"LH1315","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010219":{"r":"LH1315","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010220":{"r":"LH1315","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010221":{"r":"LH1315","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010222":{"r":"LH1315","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010223":{"r":"LH1315","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010224":{"r":"LH1315","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010225":{"r":"LH204","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010226":{"r":"LH204","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010227":{"r":"LH204","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010228":{"r":"LH204","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010229":{"r":"LH204","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010230":{"r":"LH204","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010231":{"r":"LH204","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010232":{"r":"LH204","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010233":{"r":"LH204","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010234":{"r":"LH204","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010235":{"r":"LH204","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010236":{"r":"LH204","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010237":{"r":"LH204","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010238":{"r":"LH204","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010239":{"r":"LH204","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010240":{"r":"LH204","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010241":{"r":"LH204","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010242":{"r":"LH204","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010243":{"r":"LH204","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010244":{"r":"LH204","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010245":{"r":"LH204","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010246":{"r":"LH204","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010247":{"r":"LH204","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010248":{"r":"LH204","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010249":{"r":"LH204","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010251":{"r":"LH204","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AO2","ba":"Batch 2"},"RA2411056010252":{"r":"LH204","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010253":{"r":"LH204","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010254":{"r":"LH204","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010255":{"r":"LH204","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010256":{"r":"LH205","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010257":{"r":"LH205","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010258":{"r":"LH205","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010259":{"r":"LH205","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010260":{"r":"LH205","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010261":{"r":"LH205","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010262":{"r":"LH205","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010263":{"r":"LH205","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010264":{"r":"LH205","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010265":{"r":"LH205","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010266":{"r":"LH205","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010267":{"r":"LH205","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010268":{"r":"LH205","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010269":{"r":"LH205","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010270":{"r":"LH205","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010271":{"r":"LH205","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010273":{"r":"LH205","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010274":{"r":"LH205","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010275":{"r":"LH205","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010276":{"r":"LH205","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010277":{"r":"LH205","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010278":{"r":"LH205","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010279":{"r":"LH205","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010280":{"r":"LH205","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010281":{"r":"LH205","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010282":{"r":"LH205","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010283":{"r":"LH205","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010284":{"r":"LH205","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010285":{"r":"LH205","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010286":{"r":"LH205","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010287":{"r":"LH220","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010288":{"r":"LH220","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010289":{"r":"LH220","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010291":{"r":"LH220","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010293":{"r":"LH220","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010294":{"r":"LH220","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010295":{"r":"LH220","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010296":{"r":"LH220","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010297":{"r":"LH220","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010299":{"r":"LH220","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010300":{"r":"LH220","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010301":{"r":"LH220","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010302":{"r":"LH220","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010303":{"r":"LH220","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010305":{"r":"LH220","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010306":{"r":"LH220","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010307":{"r":"LH220","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010308":{"r":"LH220","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010310":{"r":"LH220","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010311":{"r":"LH220","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010312":{"r":"LH220","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010314":{"r":"LH220","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2411056010315":{"r":"LH220","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AP2","ba":"Batch 2"},"RA2412704010001":{"r":"LH220","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010002":{"r":"LH220","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010003":{"r":"LH220","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010004":{"r":"LH220","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010005":{"r":"LH220","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010006":{"r":"LH220","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010007":{"r":"LH220","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010008":{"r":"LH221","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010009":{"r":"LH221","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010010":{"r":"LH221","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010011":{"r":"LH221","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010012":{"r":"LH221","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010013":{"r":"LH221","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010014":{"r":"LH221","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010015":{"r":"LH221","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010016":{"r":"LH221","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010017":{"r":"LH221","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010018":{"r":"LH221","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010019":{"r":"LH221","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010021":{"r":"LH221","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010022":{"r":"LH221","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010024":{"r":"LH221","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010025":{"r":"LH221","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010026":{"r":"LH221","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010027":{"r":"LH221","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010028":{"r":"LH221","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010029":{"r":"LH221","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010030":{"r":"LH221","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010031":{"r":"LH221","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2412704010032":{"r":"LH221","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AQ2","ba":"Batch 2"},"RA2411050010030":{"r":"LH506","s":"31","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010031":{"r":"LH506","s":"32","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010032":{"r":"LH506","s":"33","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010033":{"r":"LH506","s":"34","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010035":{"r":"LH506","s":"35","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010037":{"r":"LH506","s":"36","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010038":{"r":"LH506","s":"37","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010039":{"r":"LH506","s":"38","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010040":{"r":"LH506","s":"39","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010041":{"r":"LH506","s":"40","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010042":{"r":"LH506","s":"41","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010044":{"r":"LH506","s":"42","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010045":{"r":"LH506","s":"43","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010046":{"r":"LH506","s":"44","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010047":{"r":"LH506","s":"45","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411050010048":{"r":"LH506","s":"46","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AR2","ba":"Batch 2"},"RA2411051010001":{"r":"LH506","s":"47","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010003":{"r":"LH506","s":"48","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010004":{"r":"LH506","s":"49","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010005":{"r":"LH506","s":"50","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010006":{"r":"LH506","s":"51","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010007":{"r":"LH506","s":"52","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010008":{"r":"LH506","s":"53","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010010":{"r":"LH506","s":"54","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010011":{"r":"LH506","s":"55","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010012":{"r":"LH506","s":"56","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010013":{"r":"LH506","s":"57","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010014":{"r":"LH506","s":"58","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010015":{"r":"LH506","s":"59","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"},"RA2411051010017":{"r":"LH506","s":"60","bl":"Tech Park-2","d":"DSBS","dt":"18 SEP 2026","c":"21CSC301T","se":"AS2","ba":"Batch 2"}};
+</script>
+
+<script>
+/* ---------------- particles (isolated: never blocks the rest of the page) ---------------- */
+try {
+  const canvas = document.getElementById('particles');
+  const ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
+
+  if (ctx) {
+    let w, h, particles = [];
+    const COLORS = ['rgba(242,183,5,0.55)','rgba(46,196,182,0.5)','rgba(255,255,255,0.35)'];
+
+    function resize(){
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function makeParticle(){
+      return {
+        x: Math.random()*w,
+        y: Math.random()*h + h*0.2,
+        r: Math.random()*2.2 + 0.6,
+        speed: Math.random()*0.35 + 0.08,
+        drift: (Math.random()-0.5)*0.25,
+        color: COLORS[Math.floor(Math.random()*COLORS.length)],
+        phase: Math.random()*Math.PI*2
+      };
+    }
+    const COUNT = Math.min(90, Math.floor((window.innerWidth*window.innerHeight)/16000));
+    for(let i=0;i<COUNT;i++) particles.push(makeParticle());
+
+    function tick(){
+      try {
+        ctx.clearRect(0,0,w,h);
+        for(const p of particles){
+          p.y -= p.speed;
+          p.phase += 0.01;
+          p.x += Math.sin(p.phase)*p.drift;
+          if(p.y < -10){ p.y = h+10; p.x = Math.random()*w; }
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+        }
+        requestAnimationFrame(tick);
+      } catch(e){ /* stop animating quietly, rest of the page is unaffected */ }
+    }
+    tick();
+  }
+} catch(e) {
+  console.warn('Particle background could not start:', e);
+}
+</script>
+
+<script>
+/* ---------------- stats ---------------- */
+try {
+  const values = Object.values(window.SEAT_DATA || {});
+  const rooms = new Set(values.map(v=>v.r));
+  const depts = new Set(values.map(v=>v.d));
+  document.getElementById('statTotal').textContent = values.length.toLocaleString();
+  document.getElementById('statRooms').textContent = rooms.size;
+  document.getElementById('statDepts').textContent = depts.size;
+} catch(e) {
+  console.warn('Stats could not load:', e);
+}
+</script>
+
+<script>
+/* ---------------- search / ticket ---------------- */
+try {
+const COURSE_LABELS = {
+  '21MAB201T': 'Mathematics',
+  '21MAB206T': 'Mathematics',
+  '21CSC302J': 'Computer Science'
+};
+
+const DEPT_LABELS = {
+  'DSBS': 'Data Science & Business Systems',
+  'CTECH': 'Computing Technologies',
+  'CINTEL': 'Computational Intelligence',
+  'NWC': 'Networking & Communication'
+};
+
+function barcodeFor(reg){
+  let bars = '';
+  for(let i=0;i<reg.length;i++){
+    const code = reg.charCodeAt(i);
+    const width = 2 + (code % 4);
+    const isDark = i % 2 === 0;
+    bars += `<i style="width:${width}px; opacity:${isDark ? 1 : 0.15}"></i>`;
+  }
+  return bars;
+}
+
+function showResult(reg){
+  const rec = SEAT_DATA[reg];
+  const errorEl = document.getElementById('errorMsg');
+  const ticket = document.getElementById('ticket');
+
+  if(!rec){
+    errorEl.classList.add('show');
+    ticket.classList.remove('show');
+    return;
+  }
+  errorEl.classList.remove('show');
+
+  document.getElementById('tSeat').textContent = rec.s;
+  document.getElementById('tRoomMini').textContent = 'ROOM ' + rec.r;
+  document.getElementById('tRegTag').textContent = 'REG NO ' + reg;
+  document.getElementById('tHeadline').textContent = rec.ba + ' · exam sitting';
+  document.getElementById('tRoom').textContent = rec.r;
+  document.getElementById('tBlock').textContent = rec.bl;
+  document.getElementById('tDate').textContent = rec.dt;
+  document.getElementById('tDept').textContent = rec.d + (DEPT_LABELS[rec.d] ? ' · '+DEPT_LABELS[rec.d] : '');
+  document.getElementById('tCourse').textContent = rec.c + (COURSE_LABELS[rec.c] ? ' · '+COURSE_LABELS[rec.c] : '');
+  document.getElementById('tSection').textContent = 'Sec ' + rec.se + ' · ' + rec.ba;
+  document.getElementById('tBarcode').innerHTML = barcodeFor(reg);
+
+  ticket.classList.remove('show');
+  void ticket.offsetWidth;
+  ticket.classList.add('show');
+  try {
+    ticket.scrollIntoView({behavior:'smooth', block:'center'});
+  } catch(e) {
+    try { ticket.scrollIntoView(); } catch(e2) { /* ignore on unsupported browsers */ }
+  }
+}
+
+function runSearch(){
+  const raw = document.getElementById('regInput').value.trim().toUpperCase();
+  if(!raw) return;
+  showResult(raw);
+}
+
+document.getElementById('revealBtn').addEventListener('click', runSearch);
+document.getElementById('regInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') runSearch();
+});
+} catch(e) {
+  console.warn('Search widget failed to init:', e);
+}
+</script>
+<script>
+try {
+const QUOTES = [
+  { text: "You don't need to know everything in the syllabus. You need to know what you know, calmly.", attr: "TESSERACT LABS" },
+  { text: "A steady hand beats a fast one. Read the question twice before you write the answer once.", attr: "EXAM HALL WISDOM" },
+  { text: "Nerves are just readiness with nowhere to go yet. Walk in, sit down, let it go to work.", attr: "TESSERACT LABS" },
+  { text: "Find your seat, find your breath, then find the first easy mark on the page.", attr: "EXAM HALL WISDOM" },
+  { text: "The room number is temporary. What you carry out of it is not.", attr: "TESSERACT LABS" },
+  { text: "Preparation is the quiet work that makes the loud day feel ordinary.", attr: "EXAM HALL WISDOM" }
+];
+let qIndex = 0;
+const quoteTextEl = document.getElementById('quoteText');
+const quoteAttrEl = document.getElementById('quoteAttr');
+const quoteDotsEl = document.getElementById('quoteDots');
+
+function renderDots(){
+  quoteDotsEl.innerHTML = '';
+  QUOTES.forEach((_,i)=>{
+    const d = document.createElement('span');
+    if(i===qIndex) d.classList.add('active');
+    d.addEventListener('click', ()=>{ qIndex = i; renderQuote(); resetQuoteTimer(); });
+    quoteDotsEl.appendChild(d);
+  });
+}
+function renderQuote(){
+  quoteTextEl.classList.remove('show');
+  setTimeout(()=>{
+    quoteTextEl.textContent = '“' + QUOTES[qIndex].text + '”';
+    quoteAttrEl.textContent = QUOTES[qIndex].attr;
+    quoteTextEl.classList.add('show');
+    renderDots();
+  }, 220);
+}
+let quoteTimer;
+function resetQuoteTimer(){
+  clearInterval(quoteTimer);
+  quoteTimer = setInterval(()=>{
+    qIndex = (qIndex+1) % QUOTES.length;
+    renderQuote();
+  }, 6000);
+}
+renderQuote();
+resetQuoteTimer();
+} catch(e) {
+  console.warn('Quotes widget failed to init:', e);
+}
+</script>
+
+<script>
+/* ---------------- feedback ---------------- */
+try {
+let currentStars = 0;
+const starButtons = document.querySelectorAll('#fbStars button');
+starButtons.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    currentStars = parseInt(btn.dataset.v);
+    starButtons.forEach(b=> b.classList.toggle('active', parseInt(b.dataset.v) <= currentStars));
+  });
+});
+
+document.getElementById('fbForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const name = document.getElementById('fbName').value.trim() || 'Anonymous student';
+  const msg = document.getElementById('fbMsg').value.trim();
+  if(!msg) return;
+
+  const emptyEl = document.getElementById('fbEmpty');
+  if(emptyEl) emptyEl.remove();
+
+  const card = document.createElement('div');
+  card.className = 'fb-card';
+  const starsStr = '★'.repeat(currentStars) + '☆'.repeat(5-currentStars);
+  card.innerHTML = `
+    <div class="fb-top">
+      <span class="fb-name">${name}</span>
+      <span class="fb-stars">${currentStars ? starsStr : ''}</span>
+    </div>
+    <p></p>
+  `;
+  card.querySelector('p').textContent = msg;
+  document.getElementById('fbWall').prepend(card);
+
+  document.getElementById('fbForm').reset();
+  currentStars = 0;
+  starButtons.forEach(b=> b.classList.remove('active'));
+});
+} catch(e) {
+  console.warn('Feedback widget failed to init:', e);
+}
+</script>
+</body>
+</html>
